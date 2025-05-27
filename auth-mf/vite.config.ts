@@ -1,26 +1,44 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { federation } from '@module-federation/vite'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { withZephyr } from "vite-plugin-zephyr";
+import { federation } from "@module-federation/vite";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'auth-mf',
-      filename: 'remoteEntry.js',
-      manifest: true,
+      name: "auth",
+      filename: "remoteEntry.js",
       exposes: {
-        './auth': './src/components/Form.tsx',
+        "./AuthForm": "./src/components/Form.tsx",
       },
       shared: {
         react: {
           singleton: true,
         },
-        'react/': {
+        "react-dom": {
           singleton: true,
         },
       },
     }),
+    withZephyr(),
   ],
-})
+  server: {
+    port: 5173,
+  },
+  build: {
+    minify: false,
+    target: "chrome89",
+    modulePreload: {
+        resolveDependencies: (_, deps: string[]) => {
+          // Only preload React packages and non-federated modules
+          return deps.filter((dep) => {
+            const isReactPackage = dep.includes('react') || dep.includes('react-dom');
+            const isNotRemoteEntry = !dep.includes('remoteEntry.js');
+
+            return isReactPackage && isNotRemoteEntry;
+          });
+        },
+      },
+  },
+});

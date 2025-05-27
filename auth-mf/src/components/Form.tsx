@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function Form() {
+export default function Form() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -42,5 +42,3 @@ function Form() {
     </div>
   )
 }
-
-export default Form
